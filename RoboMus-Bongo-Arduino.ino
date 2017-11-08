@@ -25,6 +25,10 @@ byte firstByte;
 //variaveis auxiliares
 byte hByte;
 byte lByte;
+byte h2Byte;
+byte l2Byte;
+
+long initialTime;
 
 Servo bongoGrave; 
 Servo bongoAgudo;
@@ -72,24 +76,7 @@ void tocarJunto(int tempo){
 void tocarJunto(){
   tocarJunto(TEMPO);
 }
-
-void setup() {
-  
-  Serial.begin(9600);
-
-  pinMode(13,OUTPUT);
-  digitalWrite(13,LOW);
-  
-  iniciarServos();
-  
-  currentMessage.initialTime = millis();
-  nextMessage.relativeTime = 0x7FFF;
-  
-  /*teste*/
-  //tocar(bongoGrave,15, 0, 50);
-  
-
-}
+// funcoes para teste 
 void testAngulo(){
   int angulo;
    if (Serial.available() >= 3) {
@@ -224,24 +211,48 @@ void comeAsYouAre(int tempo){
     delay(1*tempo - 60);
     tocar(bongoGrave, 60);
     delay(1*tempo - 60);
-}  /*  
-void loop(){
-  comeAsYouAre(250);
 }
+   
+void setup() {
+  
+  Serial.begin(9600);
+
+  pinMode(13,OUTPUT);
+  digitalWrite(13,LOW);
+  
+  iniciarServos();
+  
+  initialTime = millis();
+  nextMessage.relativeTime = 0x7FFF;
+  
+  /*teste*/
+  //tocar(bongoGrave,15, 0, 50);
+  
+
+}
+/*
+void loop(){
+  ritmo4(150);
+}
+
 */
 void loop()
 {
   if(readNewMsg){
-    if(Serial.available() > 5){
+    if(Serial.available() > 0){
       //Read the header
       firstByte = Serial.read();
       nextMessage.idAction = firstByte;
-      delay(5);
+      //Serial.write(firstByte);
+      delay(10);
       nextMessage.idMessage = Serial.read();
      
       hByte = Serial.read();
+      h2Byte = Serial.read();
       lByte = Serial.read();
-      nextMessage.relativeTime = hByte<<8 | lByte;
+      l2Byte = Serial.read();
+      
+      nextMessage.relativeTime = hByte<<24 | h2Byte<<16 | lByte<<8 | l2Byte;
       
       hByte = Serial.read();
       lByte = Serial.read();
@@ -252,16 +263,16 @@ void loop()
       switch (firstByte){
         case 10://tocar bongo grave
           
-          nextMessage.data[0] = Serial.read();
-          nextMessage.data[1] = Serial.read();
+          //nextMessage.data[0] = Serial.read();
+          //nextMessage.data[1] = Serial.read();
           
           readNewMsg = 0;
           
         break;
         case 20://tocar bongo grave
           
-          nextMessage.data[0] = Serial.read();
-          nextMessage.data[1] = Serial.read();
+          //nextMessage.data[0] = Serial.read();
+          //nextMessage.data[1] = Serial.read();
           
           readNewMsg = 0;
           
@@ -273,14 +284,18 @@ void loop()
   }else{
     //nextMessage.relativeTime = 3000;
     //nextMessage.duration = 5000;
-    if( millis() >= (currentMessage.initialTime + nextMessage.relativeTime) 
+    if( millis() >= (initialTime + nextMessage.relativeTime) 
        ){ //execucao
+        
       currentMessage = nextMessage;
       readNewMsg = 1;
+      if(currentMessage.relativeTime == 0){
+        initialTime = millis();
+      }
       switch (currentMessage.idAction){
         case 10://playString
           //funcao pra isso
-          currentMessage.initialTime = millis();
+          //currentMessage.initialTime = millis();
           
           tocar(bongoGrave);
           
@@ -288,7 +303,7 @@ void loop()
         break;
         case 20://playString
           //funcao pra isso
-          currentMessage.initialTime = millis();
+          //currentMessage.initialTime = millis();
           
           tocar(bongoAgudo);
           
@@ -298,14 +313,21 @@ void loop()
        }  
     }else{ //preparacao
       
-      switch (currentMessage.idAction){
+      switch (nextMessage.idAction){
         case 10:
         //funcao pra isso
           digitalWrite(13,HIGH);
+          delay(40);
+          digitalWrite(13,LOW);
+          delay(40);
         break;
         case 20:
         //funcao pra isso
           digitalWrite(13,HIGH);
+          delay(40);
+          digitalWrite(13,LOW);
+          delay(40);
+
         break;
         
        }
