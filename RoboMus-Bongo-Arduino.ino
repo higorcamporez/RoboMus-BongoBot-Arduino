@@ -4,7 +4,7 @@
 #define PORTA_BONGO_AGUDO 9
 #define ANGULO_DESCIDA 18
 #define ANGULO_SUBIDA 5
-#define TEMPO 60 
+#define TEMPO 50 
 
 struct Message{
   
@@ -151,16 +151,16 @@ void ritmo3(int tempo){
 void ritmo4(int tempo){
     
     tocar(bongoGrave, 60);
-    delay(4*tempo - 60);
+    delay(2*tempo - 60);
     tocar(bongoAgudo, 60);
-    delay(2*tempo - 60);
+    delay(1*tempo - 60);
+    tocar(bongoGrave, 60);
+    delay(1*tempo - 60);
     tocar(bongoGrave, 60);
     delay(2*tempo - 60);
-    tocar(bongoGrave, 60);
-    delay(4*tempo - 60);
     tocar(bongoAgudo, 60);
     //tocarJunto();
-    delay(4*tempo - 60);
+    delay(2*tempo - 60);
     
 
 }
@@ -212,7 +212,16 @@ void comeAsYouAre(int tempo){
     tocar(bongoGrave, 60);
     delay(1*tempo - 60);
 }
-   
+int i = 0, medAnt=0, med;
+void interrupcao(){
+  med = millis();
+  if(med - medAnt > 50 ){
+    Serial.println(millis());
+    medAnt =  med;
+  }
+ 
+
+ }   
 void setup() {
   
   Serial.begin(9600);
@@ -227,15 +236,17 @@ void setup() {
   
   /*teste*/
   //tocar(bongoGrave,15, 0, 50);
-  
+  attachInterrupt(0,interrupcao,RISING);
 
 }
-/*
+
 void loop(){
-  ritmo4(150);
+  tocar(bongoGrave, 50);
+  delay(75);
+  //Serial.println(analogRead(A1));
 }
 
-*/
+/*
 void loop()
 {
   if(readNewMsg){
@@ -316,17 +327,11 @@ void loop()
       switch (nextMessage.idAction){
         case 10:
         //funcao pra isso
-          digitalWrite(13,HIGH);
-          delay(40);
-          digitalWrite(13,LOW);
-          delay(40);
+
         break;
         case 20:
         //funcao pra isso
-          digitalWrite(13,HIGH);
-          delay(40);
-          digitalWrite(13,LOW);
-          delay(40);
+
 
         break;
         
@@ -336,4 +341,4 @@ void loop()
     
   }
   
-} 
+} */
