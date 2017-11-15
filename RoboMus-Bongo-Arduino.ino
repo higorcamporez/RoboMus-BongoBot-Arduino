@@ -4,7 +4,7 @@
 #define PORTA_BONGO_AGUDO 9
 #define ANGULO_DESCIDA 18
 #define ANGULO_SUBIDA 5
-#define TEMPO 50 
+#define TEMPO 60 
 
 struct Message{
   
@@ -239,14 +239,14 @@ void setup() {
   attachInterrupt(0,interrupcao,RISING);
 
 }
-
+/*
 void loop(){
   tocar(bongoGrave, 50);
   delay(75);
   //Serial.println(analogRead(A1));
 }
+*/
 
-/*
 void loop()
 {
   if(readNewMsg){
@@ -272,7 +272,7 @@ void loop()
       //end header
       
       switch (firstByte){
-        case 10://tocar bongo grave
+        case 10://tocar bongo grave def
           
           //nextMessage.data[0] = Serial.read();
           //nextMessage.data[1] = Serial.read();
@@ -280,15 +280,30 @@ void loop()
           readNewMsg = 0;
           
         break;
-        case 20://tocar bongo grave
-          
+        case 20://tocar bongo grave    def
           //nextMessage.data[0] = Serial.read();
-          //nextMessage.data[1] = Serial.read();
-          
+          //nextMessage.data[1] = Serial.read(); 
           readNewMsg = 0;
-          
+   
         break;
-        
+        case 30://playBongoTogetherDef 
+          readNewMsg = 0;
+        break;
+        case 40://playBongoTogether
+          nextMessage.data[0] = Serial.read(); //angulo de descida
+          nextMessage.data[1] = Serial.read(); //angulo de subida
+          readNewMsg = 0;
+        break;
+        case 50://playBongoG
+          nextMessage.data[0] = Serial.read(); //angulo de descida
+          nextMessage.data[1] = Serial.read(); //angulo de subida
+          readNewMsg = 0;
+        break;
+        case 60://playBongoA
+          nextMessage.data[0] = Serial.read(); //angulo de descida
+          nextMessage.data[1] = Serial.read(); //angulo de subida
+          readNewMsg = 0;
+        break;
         
        }
     }   
@@ -304,25 +319,41 @@ void loop()
         initialTime = millis();
       }
       switch (currentMessage.idAction){
-        case 10://playString
-          //funcao pra isso
-          //currentMessage.initialTime = millis();
-          
+        case 10://playBongoDefG
           tocar(bongoGrave);
-          
           Serial.write(currentMessage.idMessage);
         break;
-        case 20://playString
-          //funcao pra isso
-          //currentMessage.initialTime = millis();
-          
+        case 20://playBongoDefA
           tocar(bongoAgudo);
-          
+          Serial.write(currentMessage.idMessage);
+        break;
+        case 30://playBongoTogetherDef
+          tocarJunto();
+          Serial.write(currentMessage.idMessage);
+        break;
+        case 40://playBongoTogether
+          tocarJunto(currentMessage.data[0],
+                     currentMessage.data[1],
+                     currentMessage.duration);
+          Serial.write(currentMessage.idMessage);
+        break;
+        case 50://playBongoG
+          tocar(bongoGrave,
+                currentMessage.data[0],
+                currentMessage.data[1],
+                currentMessage.duration);
+          Serial.write(currentMessage.idMessage);
+        break;
+        case 60://playBongoA
+          tocar(bongoAgudo,
+                currentMessage.data[0],
+                currentMessage.data[1],
+                currentMessage.duration);
           Serial.write(currentMessage.idMessage);
         break;
         
        }  
-    }else{ //preparacao
+    }/*else{ //preparacao
       
       switch (nextMessage.idAction){
         case 10:
@@ -337,8 +368,8 @@ void loop()
         
        }
          
-    }
+    }*/
     
   }
   
-} */
+}
