@@ -1,10 +1,14 @@
 #include <Servo.h>
 
-#define PORTA_BONGO_GRAVE 10
-#define PORTA_BONGO_AGUDO 9
-#define ANGULO_DESCIDA 18
-#define ANGULO_SUBIDA 5
-#define TEMPO 60 
+#define PORTA_BONGO_GRAVE 9
+#define PORTA_BONGO_AGUDO 10
+#define ANGULO_DESCIDA_A 20
+#define ANGULO_SUBIDA_A 5
+#define ANGULO_DESCIDA_G 30 
+#define ANGULO_SUBIDA_G 10
+
+#define TEMPO_A 65 
+#define TEMPO_G 65 
 
 struct Message{
   
@@ -38,8 +42,8 @@ void iniciarServos(){
   bongoGrave.attach(PORTA_BONGO_GRAVE);
   bongoAgudo.attach(PORTA_BONGO_AGUDO);
   
-  bongoGrave.write(0);
-  bongoAgudo.write(0);
+  bongoGrave.write(ANGULO_SUBIDA_G);
+  bongoAgudo.write(ANGULO_SUBIDA_A);
 
   delay(500);
    
@@ -51,30 +55,50 @@ void tocar(Servo bongo,int anguloDescida, int anguloSubida, int tempo){
   bongo.write(anguloSubida);
 }
 
-void tocar(Servo bongo, int tempo){
-  tocar(bongo, ANGULO_DESCIDA, ANGULO_SUBIDA,tempo);
+void tocar(char bongo, int tempo){
+  if(bongo == 'A'){
+    tocar(bongoAgudo, ANGULO_DESCIDA_A, ANGULO_SUBIDA_A,tempo);
+  }else{
+    tocar(bongoGrave, ANGULO_DESCIDA_G, ANGULO_SUBIDA_G,tempo);
+  }
 }
 
-void tocar(Servo bongo){
+void tocar(char bongo){
 
   //int tempo = nextMessage.data[0]<<8 | nextMessage.data[1];
-  tocar(bongo,TEMPO);
+  if(bongo == 'A'){
+    tocar(bongo,TEMPO_A);
+  }else{
+    tocar(bongo,TEMPO_G);
+  }
   
 }
 
-void tocarJunto(int anguloDescida, int anguloSubida, int tempo){
-  bongoGrave.write(anguloDescida);
-  bongoAgudo.write(anguloDescida);
+void tocarJunto(
+                int anguloDescidaA,
+                int anguloDescidaG,
+                int anguloSubidaA,
+                int anguloSubidaG,
+                int tempo
+                ){
+                  
+  bongoGrave.write(anguloDescidaG);
+  bongoAgudo.write(anguloDescidaA);
   delay(tempo);
-  bongoGrave.write(anguloSubida);
-  bongoAgudo.write(anguloSubida);
+  bongoAgudo.write(anguloSubidaA);
+  bongoGrave.write(anguloSubidaG);
 }
 
 void tocarJunto(int tempo){
-  tocarJunto(ANGULO_DESCIDA,ANGULO_SUBIDA,tempo);
+  
+  tocarJunto( ANGULO_DESCIDA_A, 
+              ANGULO_DESCIDA_G,
+              ANGULO_SUBIDA_A,
+              ANGULO_SUBIDA_G,
+              tempo);
 }
 void tocarJunto(){
-  tocarJunto(TEMPO);
+  tocarJunto(TEMPO_A+8);
 }
 // funcoes para teste 
 void testAngulo(){
@@ -94,17 +118,13 @@ void testAngulo(){
             
             tempo += (Serial.read() - 48);
             Serial.println(tempo);
-            tocar(bongoGrave, tempo);
+            tocar('G', tempo);
           break;
         }
    }
 }
+/*
 void ritmo1(int tempo){
-    /*
-    tocarJunto();
-    delay(tempo);
-    tocarJunto();
-    delay(tempo); */
 
     tocar(bongoGrave, 60);
     delay(2*tempo);
@@ -211,7 +231,7 @@ void comeAsYouAre(int tempo){
     delay(1*tempo - 60);
     tocar(bongoGrave, 60);
     delay(1*tempo - 60);
-}
+} */
 int i = 0, medAnt=0, med;
 void interrupcao(){
   med = millis();
@@ -235,9 +255,10 @@ void setup() {
   nextMessage.relativeTime = 0x7FFF;
   
   /*teste*/
-  //tocar(bongoGrave,15, 0, 50);
+  //tocarJunto();
   attachInterrupt(0,interrupcao,RISING);
-
+  
+  
 }
 /*
 void loop(){
@@ -248,7 +269,8 @@ void loop(){
 */
 
 void loop()
-{
+{ 
+  //ritmo5(200);
   if(readNewMsg){
     if(Serial.available() > 0){
       //Read the header
@@ -320,11 +342,11 @@ void loop()
       }
       switch (currentMessage.idAction){
         case 10://playBongoDefG
-          tocar(bongoGrave);
+          tocar('G');
           Serial.write(currentMessage.idMessage);
         break;
         case 20://playBongoDefA
-          tocar(bongoAgudo);
+          tocar('A');
           Serial.write(currentMessage.idMessage);
         break;
         case 30://playBongoTogetherDef
@@ -332,10 +354,10 @@ void loop()
           Serial.write(currentMessage.idMessage);
         break;
         case 40://playBongoTogether
-          tocarJunto(currentMessage.data[0],
+          /*tocarJunto(currentMessage.data[0],
                      currentMessage.data[1],
                      currentMessage.duration);
-          Serial.write(currentMessage.idMessage);
+          Serial.write(currentMessage.idMessage);*/
         break;
         case 50://playBongoG
           tocar(bongoGrave,
